@@ -2,25 +2,26 @@ export class FormValidator{
     constructor(validationProperties, form) {
         this._validationProperties = validationProperties;
         this._form = form
+        this._formInputList = Array.from(form.querySelectorAll(validationProperties.inputSelector))
+        this._saveButton = form.querySelector(validationProperties.submitButtonSelector)
     }
 
     enableValidation() {
-        const formInputList = Array.from(this._form.querySelectorAll(this._validationProperties.inputSelector))
-        formInputList.forEach(formInput => {
+        this._formInputList.forEach(formInput => {
             const inputErrorElement = this._form.querySelector(`.${formInput.id}-error`);
-            this._addFormInputValidationListeners(formInput, inputErrorElement, formInputList)
+            this._addFormInputValidationListeners(formInput, inputErrorElement)
         })
     }
 
-    _addFormInputValidationListeners(formInput, inputErrorElement, formInputList) {
+    _addFormInputValidationListeners(formInput, inputErrorElement) {
         formInput.addEventListener('input', () => {
-            this._toggleSaveButtonState(formInputList);
+            this._toggleSaveButtonState();
             this._toggleInputErrorState(formInput, inputErrorElement)
         })
     }
 
-    _toggleSaveButtonState(inputList) {
-        if (this._hasInvalidInput(inputList)) {
+    _toggleSaveButtonState() {
+        if (this._hasInvalidInput()) {
             this.disableSaveButton();
         } else {
             this.enableSaveButton();
@@ -28,19 +29,17 @@ export class FormValidator{
     }
 
     disableSaveButton() {
-        const saveButton = this._form.querySelector(this._validationProperties.submitButtonSelector)
-        saveButton.setAttribute('disabled', true);
-        saveButton.classList.add(this._validationProperties.inactiveButtonClass);
+        this._saveButton.setAttribute('disabled', true);
+        this._saveButton.classList.add(this._validationProperties.inactiveButtonClass);
     }
 
     enableSaveButton() {
-        const saveButton = this._form.querySelector(this._validationProperties.submitButtonSelector)
-        saveButton.removeAttribute('disabled');
-        saveButton.classList.remove(this._validationProperties.inactiveButtonClass);
+        this._saveButton.removeAttribute('disabled');
+        this._saveButton.classList.remove(this._validationProperties.inactiveButtonClass);
     }
 
-    _hasInvalidInput(inputList) {
-        return inputList.some(inputElement => {
+    _hasInvalidInput() {
+        return this._formInputList.some(inputElement => {
             return !inputElement.validity.valid;
         })
     }
@@ -66,8 +65,7 @@ export class FormValidator{
     }
 
     clearInputFieldsValidationErrors() {
-        const formInputList = Array.from(this._form.querySelectorAll(this._validationProperties.inputSelector))
-        formInputList.forEach(formInput => {
+        this._formInputList.forEach(formInput => {
             const formInputError = this._form.querySelector(`.${formInput.id}-error`);
             this._hideInputErrorMessage(formInput, formInputError)
         })
